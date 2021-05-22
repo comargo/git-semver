@@ -50,6 +50,9 @@ release:
   stage: deploy
   dependencies:
     - build
+  before_script:
+    - curl --location --output /usr/local/bin/release-cli "https://release-cli-downloads.s3.amazonaws.com/latest/release-cli-linux-amd64"
+    - chmod +x /usr/local/bin/release-cli
   script:
     - echo "Make new release"
   release:
