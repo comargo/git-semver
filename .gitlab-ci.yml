@@ -19,15 +19,13 @@ cache:
 
 before_script:
   - python -V  # Print out python version for debugging
-  - pip install virtualenv
-  - virtualenv venv
+  - python -m venv venv
   - source venv/bin/activate
-  - pip install wheel twine
 
 test:
   script:
-    - pip install tox flake8  # you can also use tox
-    - tox -e flake8
+    - pip install tox
+    - tox
 
 run:
   variables:
@@ -36,6 +34,7 @@ run:
     TWINE_CERT: /etc/ssl/certs/ca-certificates.crt
     TWINE_REPOSITORY_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
   script:
+    - pip install wheel twine
     - python setup.py sdist bdist_wheel
     - python -m twine upload dist/*
   artifacts:
