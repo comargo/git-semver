@@ -30,8 +30,11 @@ build:
     - mkdir -p ./dist
     - cp .tox/dist/*.whl ./dist
   artifacts:
+    when: always
     paths:
       - dist/*.whl
+    reports:
+      junit: report.xml
 
 deploy:
   stage: deploy
