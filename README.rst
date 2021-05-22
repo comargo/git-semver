@@ -1,11 +1,11 @@
-==========
+====================
 git-semantic-version
-==========
+====================
 
 Retrieving semantic versioning from git tags
 
 Usage:
------
+------
 
 ::
 
