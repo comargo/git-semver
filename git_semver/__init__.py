@@ -97,7 +97,7 @@ def main():
         print(version)
 
 
-def __version__():  # noqa: ignore=N807
+def __version__():
     try:
         return str(next(get_versions()))
     except subprocess.CalledProcessError:
