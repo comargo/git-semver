@@ -89,17 +89,15 @@ def main():
         nargs='*')
     args = parser.parse_args()
 
-    versions = get_versions(debug=args.debug,
+    versions = list(get_versions(debug=args.debug,
                             empty_tags=args.tags,
                             first_parent=args.first_parent,
                             abbrev=args.abbrev,
                             match=args.match,
                             exclude=args.exclude,
-                            commitish=args.commitish)
+                            commitish=args.commitish) or [])
     if not versions:
-        return
-    for version in versions:
-        print(str(version))
-    else:
         print("0.0.0+non.git.build")
         return 1
+    for version in versions:
+        print(str(version))
