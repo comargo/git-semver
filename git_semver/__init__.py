@@ -31,7 +31,7 @@ def get_versions(commitish: List[str] = None,
                  abbrev: Optional[int] = None,
                  match: Optional[List[str]] = None,
                  exclude: Optional[List[str]] = None
-                 ) -> Generator[str, None, None]:
+                 ) -> Generator[VersionInfo, None, None]:
     git_cmd = ['git', 'describe', '--always', '--long']
     if debug:
         git_cmd.append('--debug')
@@ -49,7 +49,10 @@ def get_versions(commitish: List[str] = None,
 
     if debug:
         print(' '.join(git_cmd), file=sys.stderr)
-    git_proc = subprocess.check_output(git_cmd, text=True)
+    try:
+        git_proc = subprocess.check_output(git_cmd, text=True)
+    except subprocess.CalledProcessError:
+        return None
     for line in str(git_proc).split():
         yield make_semver(line.strip())
 
@@ -93,12 +96,10 @@ def main():
                             match=args.match,
                             exclude=args.exclude,
                             commitish=args.commitish)
+    if not versions:
+        return
     for version in versions:
-        print(version)
-
-
-def __version__():  # noqa: ignore=N807
-    try:
-        return str(next(get_versions()))
-    except subprocess.CalledProcessError:
-        return "0.0.0+non.git.build"
+        print(str(version))
+    else:
+        print("0.0.0+non.git.build")
+        return 1
