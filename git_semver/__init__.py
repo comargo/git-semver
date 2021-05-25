@@ -39,7 +39,7 @@ def get_versions(commitish: List[str] = None,
     if debug:
         print(' '.join(git_cmd), file=sys.stderr)
     try:
-        git_proc = subprocess.check_output(git_cmd, text=True)
+        git_proc = subprocess.check_output(git_cmd, universal_newlines=True)
     except subprocess.CalledProcessError:
         return None
     for line in str(git_proc).split():

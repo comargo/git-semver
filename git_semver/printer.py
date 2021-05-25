@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Dict
 
 from .version_info import VersionInfo, GitVersionInfo
 
@@ -35,7 +35,7 @@ def cmake(vi: VersionInfo) -> str:
     return ver_str
 
 
-printers: dict[str, Callable[[VersionInfo], str]] = {
+printers: Dict[str, Callable[[VersionInfo], str]] = {
     'semver': semver,
     'cmake': cmake,
 }
