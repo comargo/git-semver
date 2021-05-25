@@ -1,7 +1,9 @@
 from datetime import datetime
 import pytest
 
-from git_semver.version_info import _get_separated_list, VersionInfo
+from git_semver.printer import semver, cmake
+from git_semver.version_info import _get_separated_list, VersionInfo, \
+    GitVersionInfo
 
 
 class TestSeparatedList:
@@ -42,52 +44,60 @@ class TestSeparatedList:
 
 class TestVersionInfo:
     constructor_test_data = [
-        (None, "0.0.0",
-         {'major': 0, 'minor': 0, 'patch': 0, 'prerelease': '', 'build': ''}),
-        ("1", "1.0.0",
-         {'major': 1, 'minor': 0, 'patch': 0, 'prerelease': '', 'build': ''}),
-        ("1.2", "1.2.0",
-         {'major': 1, 'minor': 2, 'patch': 0, 'prerelease': '', 'build': ''}),
-        ("1.2.3", "1.2.3",
-         {'major': 1, 'minor': 2, 'patch': 3, 'prerelease': '', 'build': ''}),
-        ("1.2.3-pre.1", "1.2.3-pre.1",
-         {'major': 1, 'minor': 2, 'patch': 3, 'prerelease': 'pre.1',
-          'build': ''}),
-        ("1.2.3-pre.1+dev.2", "1.2.3-pre.1+dev.2",
-         {'major': 1, 'minor': 2, 'patch': 3, 'prerelease': 'pre.1',
-          'build': 'dev.2'}),
-        ("1.2-pre.1+dev.2", "1.2.0-pre.1+dev.2",
-         {'major': 1, 'minor': 2, 'patch': 0, 'prerelease': 'pre.1',
-          'build': 'dev.2'}),
-        ("1-pre.1+dev.2", "1.0.0-pre.1+dev.2",
-         {'major': 1, 'minor': 0, 'patch': 0, 'prerelease': 'pre.1',
-          'build': 'dev.2'}),
-        ("1+dev.2", "1.0.0+dev.2",
-         {'major': 1, 'minor': 0, 'patch': 0, 'prerelease': '',
-          'build': 'dev.2'}),
-        ("-pre", "0.0.0-pre",
-         {'major': 0, 'minor': 0, 'patch': 0, 'prerelease': 'pre',
-          'build': ''}),
-        ("+dev", "0.0.0+dev",
-         {'major': 0, 'minor': 0, 'patch': 0, 'prerelease': '',
-          'build': 'dev'})
-    ]
+        'test_input, expected_semver, expected_cmake, expected_dict',
+        [
+            (None, '0.0.0', '0.0.0',
+             {'major': 0, 'minor': 0, 'patch': 0, 'prerelease': [],
+              'build': []}),
+            ('1', '1.0.0', '1.0.0',
+             {'major': 1, 'minor': 0, 'patch': 0, 'prerelease': [],
+              'build': []}),
+            ('1.2', '1.2.0', '1.2.0',
+             {'major': 1, 'minor': 2, 'patch': 0, 'prerelease': [],
+              'build': []}),
+            ('1.2.3', '1.2.3', '1.2.3',
+             {'major': 1, 'minor': 2, 'patch': 3, 'prerelease': [],
+              'build': []}),
+            ('1.2.3-pre.1', '1.2.3-pre.1', '1.2.3',
+             {'major': 1, 'minor': 2, 'patch': 3, 'prerelease': ['pre', '1'],
+              'build': []}),
+            ('1.2.3-pre.1+dev.2', '1.2.3-pre.1+dev.2', '1.2.3',
+             {'major': 1, 'minor': 2, 'patch': 3, 'prerelease': ['pre', '1'],
+              'build': ['dev', '2']}),
+            ('1.2-pre.1+dev.2', '1.2.0-pre.1+dev.2', '1.2.0',
+             {'major': 1, 'minor': 2, 'patch': 0, 'prerelease': ['pre', '1'],
+              'build': ['dev', '2']}),
+            ('1-pre.1+dev.2', '1.0.0-pre.1+dev.2', '1.0.0',
+             {'major': 1, 'minor': 0, 'patch': 0, 'prerelease': ['pre', '1'],
+              'build': ['dev', '2']}),
+            ('1+dev.2', '1.0.0+dev.2', '1.0.0',
+             {'major': 1, 'minor': 0, 'patch': 0, 'prerelease': [],
+              'build': ['dev', '2']}),
+            ('-pre', '0.0.0-pre', '0.0.0',
+             {'major': 0, 'minor': 0, 'patch': 0, 'prerelease': ['pre'],
+              'build': []}),
+            ('+dev', '0.0.0+dev', '0.0.0',
+             {'major': 0, 'minor': 0, 'patch': 0, 'prerelease': [],
+              'build': ['dev']})
+        ]]
 
-    @pytest.mark.parametrize("test_input, expected_str, expected_dict",
-                             constructor_test_data)
-    def test_constructor(self, test_input, expected_str, expected_dict):
+    @pytest.mark.parametrize(*constructor_test_data)
+    def test_constructor(self, test_input, expected_semver, expected_cmake,
+                         expected_dict):
         vi = VersionInfo(test_input)
-        assert dict(vi) == expected_dict
-        assert str(vi) == expected_str
+        assert vi.__dict__ == expected_dict
+        assert semver(vi) == expected_semver
+        assert cmake(vi) == expected_cmake
 
-    @pytest.mark.parametrize("test_input, expected_str, expected_dict",
-                             constructor_test_data)
-    def test_constructor_v(self, test_input, expected_str, expected_dict):
+    @pytest.mark.parametrize(*constructor_test_data)
+    def test_v_constructor(self, test_input, expected_semver, expected_cmake,
+                           expected_dict):
         if test_input is None:  # skip None value
             return
-        vi = VersionInfo(f"v{test_input}")
-        assert dict(vi) == expected_dict
-        assert str(vi) == expected_str
+        vi = VersionInfo(f'v{test_input}')
+        assert vi.__dict__ == expected_dict
+        assert semver(vi) == expected_semver
+        assert cmake(vi) == expected_cmake
 
     def test_invalid_constructor(self):
         with pytest.raises(ValueError):
@@ -95,22 +105,48 @@ class TestVersionInfo:
         with pytest.raises(ValueError):
             VersionInfo("something")
 
-    def test_prerelease_append(self):
-        vi = VersionInfo("v1.2.3-pre.1+build.1")
-        vi.prerelease_append("pre2")
-        assert dict(vi) == {'major': 1, 'minor': 2, 'patch': 3,
-                            'prerelease': 'pre.1.pre2', 'build': 'build.1'}
-        vi.prerelease_append(["dev", 1])
-        assert dict(vi) == {'major': 1, 'minor': 2, 'patch': 3,
-                            'prerelease': 'pre.1.pre2.dev.1',
-                            'build': 'build.1'}
 
-    def test_build_append(self):
-        vi = VersionInfo("v1.2.3-pre.1+build.1")
-        vi.build_append("012345")
-        assert dict(vi) == {'major': 1, 'minor': 2, 'patch': 3,
-                            'prerelease': 'pre.1', 'build': 'build.1.012345'}
-        vi.build_append(["date", 20210521])
-        assert dict(vi) == {'major': 1, 'minor': 2, 'patch': 3,
-                            'prerelease': 'pre.1',
-                            'build': 'build.1.012345.date.20210521'}
+class TestGitVersionInfo:
+    constructor_test_data = [
+        'test_input, expected_semver, expected_cmake, expected_dict',
+        [
+            ({}, '0.0.0', '0.0.0',
+             {'major': 0, 'minor': 0, 'patch': 0, 'prerelease': [],
+              'build': [],
+              'commit_num': 0, 'commit_hash': ''}),
+            ({'tag': '1', 'commit_num': 1, 'commit_hash': 'abcdef'},
+             '1.0.1-dev.1+abcdef', '1.0.0.1',
+             {'major': 1, 'minor': 0, 'patch': 0, 'prerelease': [],
+              'build': [],
+              'commit_num': 1, 'commit_hash': 'abcdef'}),
+            ({'tag': '1.2.3-pre.1+build.2',
+              'commit_num': 1, 'commit_hash': 'abcdef'},
+             '1.2.3-pre.1.dev.1+build.2.abcdef', '1.2.3.1',
+             {'major': 1, 'minor': 2, 'patch': 3,
+              'prerelease': ['pre', '1'], 'build': ['build', '2'],
+              'commit_num': 1, 'commit_hash': 'abcdef'}),
+            ({'tag': '1', 'commit_num': 0, 'commit_hash': 'abcdef'},
+             '1.0.0', '1.0.0',
+             {'major': 1, 'minor': 0, 'patch': 0, 'prerelease': [],
+              'build': [],
+              'commit_num': 0, 'commit_hash': 'abcdef'}),
+            ({'tag': '1.2.3-pre.1+build.2',
+              'commit_num': 0, 'commit_hash': 'abcdef'},
+             '1.2.3-pre.1+build.2', '1.2.3',
+             {'major': 1, 'minor': 2, 'patch': 3,
+              'prerelease': ['pre', '1'], 'build': ['build', '2'],
+              'commit_num': 0, 'commit_hash': 'abcdef'}),
+            ({'tag': None, 'commit_num': 0, 'commit_hash': 'abcdef'},
+             '0.0.0+abcdef', '0.0.0',
+             {'major': 0, 'minor': 0, 'patch': 0,
+              'prerelease': [], 'build': [],
+              'commit_num': 0, 'commit_hash': 'abcdef'}),
+        ]]
+
+    @pytest.mark.parametrize(*constructor_test_data)
+    def test_constructor(self, test_input, expected_semver, expected_cmake,
+                         expected_dict):
+        vi = GitVersionInfo(**test_input)
+        assert vi.__dict__ == expected_dict
+        assert semver(vi) == expected_semver
+        assert cmake(vi) == expected_cmake

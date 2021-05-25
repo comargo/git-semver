@@ -15,8 +15,8 @@ class VersionInfo:
     major: int = 0
     minor: int = 0
     patch: int = 0
-    _prerelease: List[str] = []
-    _build: List[str] = []
+    prerelease: List[str] = []
+    build: List[str] = []
 
     version_regexp = re.compile(
         r"""
@@ -30,39 +30,11 @@ class VersionInfo:
                 )?
             )?
         )?
-        (?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?
-        (?:\+(?P<build>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
+        (?:-(?P<prerelease>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]*)*))?
+        (?:\+(?P<build>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]*)*))?
         $""",
         re.VERBOSE,
     )
-
-    @property
-    def prerelease(self) -> Optional[str]:
-        return ".".join(map(str, self._prerelease))
-
-    @prerelease.setter
-    def prerelease(self, value: Union[List[str], str, None]):
-        self._prerelease = list(_get_separated_list(value))
-
-    def prerelease_append(self, value: Union[List[str], str]):
-        if isinstance(value, str):
-            return self.prerelease_append([value])
-        self._prerelease.extend(value)
-        return self
-
-    @property
-    def build(self) -> Optional[str]:
-        return ".".join(map(str, self._build))
-
-    @build.setter
-    def build(self, value: Union[List[str], str, None]):
-        self._build = list(_get_separated_list(value))
-
-    def build_append(self, value):
-        if isinstance(value, str):
-            return self.build_append([value])
-        self._build.extend(value)
-        return self
 
     def __init__(self, version: Optional[str] = None):
         match = self.version_regexp.search(version or "")
@@ -74,17 +46,32 @@ class VersionInfo:
         self.major = int(ver['major'])
         self.minor = int(ver['minor'])
         self.patch = int(ver['patch'])
-        self.prerelease = ver['prerelease']
-        self.build = ver['build']
+        self.prerelease = list(_get_separated_list(ver['prerelease']))
+        self.build = list(_get_separated_list(ver['build']))
+
+    @classmethod
+    def copy_constructor(cls, vi):
+        if not isinstance(vi, VersionInfo):
+            raise TypeError
+        new_vi = cls()
+        new_vi.major = vi.major
+        new_vi.minor = vi.minor
+        new_vi.patch = vi.patch
+        new_vi.prerelease = vi.prerelease.copy()
+        new_vi.build = vi.build.copy()
+        return new_vi
 
     def __str__(self):
-        version = f"{self.major}.{self.minor}.{self.patch}"
-        if self.prerelease:
-            version += f"-{self.prerelease}"
-        if self.build:
-            version += f"+{self.build}"
-        return version
+        from .printer import semver
+        return semver(self)
 
-    def __iter__(self):
-        for key in ["major", "minor", "patch", "prerelease", "build"]:
-            yield key, getattr(self, key)
+
+class GitVersionInfo(VersionInfo):
+    commit_num: int = 0
+    commit_hash: str = ''
+
+    def __init__(self, tag: Optional[str] = None, commit_num: int = 0,
+                 commit_hash: str = ''):
+        super().__init__(tag)
+        self.commit_num = commit_num
+        self.commit_hash = commit_hash

@@ -2,26 +2,15 @@ import argparse
 import subprocess
 import sys
 from typing import List, Optional, Generator
-from git_semver.version_info import VersionInfo
+from git_semver.version_info import VersionInfo, GitVersionInfo
 
 
-def make_semver(describe: str) -> VersionInfo:
+def version_from_git(describe: str) -> VersionInfo:
     describe = describe.split('-')
-    commit = describe.pop()
-    number = int(describe.pop()) if len(describe) else 0
+    commit_hash = describe.pop()
+    commit_num = int(describe.pop()) if len(describe) else 0
     tag = '-'.join(describe)
-    if not tag:
-        return VersionInfo(f"+{commit}")
-
-    version = VersionInfo(tag)
-    if number == 0:
-        return version
-    if not version.prerelease:
-        version.patch += 1
-    version \
-        .prerelease_append(["dev", number]) \
-        .build_append(commit)
-    return version
+    return GitVersionInfo(tag, commit_num, commit_hash)
 
 
 def get_versions(commitish: List[str] = None,
@@ -54,7 +43,7 @@ def get_versions(commitish: List[str] = None,
     except subprocess.CalledProcessError:
         return None
     for line in str(git_proc).split():
-        yield make_semver(line.strip())
+        yield version_from_git(line.strip())
 
 
 def main():
@@ -82,6 +71,10 @@ def main():
         '--exclude',
         help='do not consider tags matching <pattern>',
         metavar='<pattern>', nargs='*')
+    parser.add_argument('--format', choices=['semver', 'cmake'],
+                        help='Version output format',
+                        default='semver'
+                        )
     parser.add_argument(
         'commitish',
         help='Commit-ish object names to describe. '
@@ -97,7 +90,12 @@ def main():
                                  exclude=args.exclude,
                                  commitish=args.commitish) or [])
     if not versions:
-        print("0.0.0+non.git.build")
-        return 1
+        versions = [VersionInfo('0.0.0+non.git.build')]
+
+    from git_semver import printer
+    formatters = {
+        'semver': printer.semver,
+        'cmake': printer.cmake
+    }
     for version in versions:
-        print(str(version))
+        print(formatters[args.format](version))
