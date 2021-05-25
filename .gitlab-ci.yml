@@ -29,10 +29,11 @@ build:
     - tox
     - mkdir -p ./dist
     - cp .tox/dist/*.whl ./dist
+    - pythom ./setup.py sdist
   artifacts:
     when: always
     paths:
-      - dist/*.whl
+      - dist/
     reports:
       junit: report.xml
 
