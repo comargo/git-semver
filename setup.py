@@ -2,21 +2,20 @@ from setuptools import setup
 
 try:
     from git_semver import get_versions
+    from git_semver.printer import semver
 except ImportError:
     def get_versions():
         return iter([])
+
+    def semver(*args, **kwargs):
+        return None
 
 
 def _get_package_version():
     versions = get_versions()
     try:
         version = next(versions)
-        version_str = f'{version.major}.{version.minor}.{version.patch}'
-        if version.prerelease:
-            version_str += f'.{version.prerelease}'
-        if version.build:
-            version_str += f'+{version.build}'
-        return version_str
+        return semver(version)
     except StopIteration:
         return None
 

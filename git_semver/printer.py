@@ -1,3 +1,5 @@
+from typing import Callable
+
 from .version_info import VersionInfo, GitVersionInfo
 
 
@@ -26,8 +28,14 @@ def semver(vi: VersionInfo) -> str:
     return ver_str
 
 
-def cmake(vi: VersionInfo):
+def cmake(vi: VersionInfo) -> str:
     ver_str = f'{vi.major}.{vi.minor}.{vi.patch}'
     if isinstance(vi, GitVersionInfo) and vi.commit_num:
         ver_str += f'.{vi.commit_num}'
     return ver_str
+
+
+printers: dict[str, Callable[[VersionInfo], str]] = {
+    'semver': semver,
+    'cmake': cmake,
+}
