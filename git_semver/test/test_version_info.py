@@ -11,24 +11,24 @@ class TestSeparatedList:
         assert list(_get_separated_list(None)) == []
 
     def test_array(self):
-        assert list(_get_separated_list(["qwe", "rty"])) == ["qwe", "rty"]
-        assert list(_get_separated_list(["qwe", 1, 2])) == ["qwe", "1", "2"]
-        assert list(_get_separated_list(["qwe.rty"])) == ["qwe.rty"]
-        assert list(_get_separated_list(["qwe", None])) == ["qwe", "None"]
+        assert list(_get_separated_list(['qwe', 'rty'])) == ['qwe', 'rty']
+        assert list(_get_separated_list(['qwe', 1, 2])) == ['qwe', '1', '2']
+        assert list(_get_separated_list(['qwe.rty'])) == ['qwe.rty']
+        assert list(_get_separated_list(['qwe', None])) == ['qwe', 'None']
 
     def test_generator(self):
         def generator():
             for i in range(5):
-                yield f"{i}"
+                yield f'{i}'
 
-        generated_sequence = ["0", "1", "2", "3", "4"]
+        generated_sequence = ['0', '1', '2', '3', '4']
         assert list(_get_separated_list(range(5))) == generated_sequence
         assert list(_get_separated_list(generator())) == generated_sequence
 
     def test_string(self):
-        assert list(_get_separated_list("qwe.rty")) == ["qwe", "rty"]
-        assert list(_get_separated_list("qwe")) == ["qwe"]
-        assert list(_get_separated_list("qwe..rty")) == ["qwe", "", "rty"]
+        assert list(_get_separated_list('qwe.rty')) == ['qwe', 'rty']
+        assert list(_get_separated_list('qwe')) == ['qwe']
+        assert list(_get_separated_list('qwe..rty')) == ['qwe', '', 'rty']
 
     def test_invalid_type(self):
         with pytest.raises(TypeError):
@@ -39,7 +39,7 @@ class TestSeparatedList:
             _get_separated_list(datetime.now())
 
     def test_semicolon_sep(self):
-        assert list(_get_separated_list("qwe:rty", ":")) == ["qwe", "rty"]
+        assert list(_get_separated_list('qwe:rty', ':')) == ['qwe', 'rty']
 
 
 class TestVersionInfo:
@@ -101,9 +101,9 @@ class TestVersionInfo:
 
     def test_invalid_constructor(self):
         with pytest.raises(ValueError):
-            VersionInfo("v1a")
+            VersionInfo('v1a')
         with pytest.raises(ValueError):
-            VersionInfo("something")
+            VersionInfo('something')
 
 
 class TestGitVersionInfo:

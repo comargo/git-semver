@@ -30,7 +30,7 @@ def get_versions(commitish: List[str] = None,
         git_cmd.append('--first-parent')
     if abbrev:
         git_cmd.extend(('--abbrev', str(abbrev)))
-    for single_match in match or ["v*"]:
+    for single_match in match or ['v*']:
         git_cmd.extend(('--match', single_match))
     for single_exclude in exclude or []:
         git_cmd.extend(('--exclude', single_exclude))
@@ -48,8 +48,8 @@ def get_versions(commitish: List[str] = None,
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="git semver",
-        description="Retrieving semantic versioning from git tags")
+        prog='git semver',
+        description='Retrieving semantic versioning from git tags')
     parser.add_argument(
         '--debug', help='debug search strategy on stderr',
         action='store_true')
@@ -65,7 +65,7 @@ def main():
         action='store', metavar='<n>', type=int)
     parser.add_argument(
         '--match',
-        help='only consider tags matching <pattern>. (default \'v*\')',
+        help='only consider tags matching <pattern>. (default "v*")',
         metavar='<pattern>', default='v*', nargs='*')
     parser.add_argument(
         '--exclude',

@@ -3,7 +3,7 @@ from typing import List, Optional, Union, Iterable, Iterator
 
 
 def _get_separated_list(value: Union[str, Iterable[str], None],
-                        sep: Optional[str] = ".") -> Iterator[str]:
+                        sep: Optional[str] = '.') -> Iterator[str]:
     if not value:
         return []
     if isinstance(value, str):
@@ -37,7 +37,7 @@ class VersionInfo:
     )
 
     def __init__(self, version: Optional[str] = None):
-        match = self.version_regexp.search(version or "")
+        match = self.version_regexp.search(version or '')
         if not match:
             raise ValueError
         ver = match.groupdict()

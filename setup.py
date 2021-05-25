@@ -11,11 +11,11 @@ def _get_package_version():
     versions = get_versions()
     try:
         version = next(versions)
-        version_str = f"{version.major}.{version.minor}.{version.patch}"
+        version_str = f'{version.major}.{version.minor}.{version.patch}'
         if version.prerelease:
-            version_str += f".{version.prerelease}"
+            version_str += f'.{version.prerelease}'
         if version.build:
-            version_str += f"+{version.build}"
+            version_str += f'+{version.build}'
         return version_str
     except StopIteration:
         return None
@@ -27,7 +27,7 @@ def _patch_version():
         return
     import configparser
     config = configparser.ConfigParser()
-    config_filename = "setup.cfg"
+    config_filename = 'setup.cfg'
     config.read(config_filename)
     config['metadata']['version'] = version
     with open(config_filename, 'w') as configfile:
