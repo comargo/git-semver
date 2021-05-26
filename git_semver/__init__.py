@@ -66,7 +66,7 @@ def main():
     parser.add_argument(
         '--match',
         help='only consider tags matching <pattern>. (default "v*")',
-        metavar='<pattern>', default='v*', nargs='*')
+        metavar='<pattern>', nargs='*')
     parser.add_argument(
         '--exclude',
         help='do not consider tags matching <pattern>',
